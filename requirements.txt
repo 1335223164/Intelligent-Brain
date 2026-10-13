@@ -1,0 +1,56 @@
+# =============================================================================
+# 依赖说明（重要）
+# 1) 本环境请使用 Python 3.11 ~ 3.12 创建 venv
+# 2) torch/torchvision 不要放在本文件里装（pip 会优先取清华源的 CPU 版），单独执行：
+#    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+# 3) 知识图谱实体/关系抽取使用 PaddleNLP UIE(uie-base)，但因 paddlenlp 在 Windows
+#    强制 protobuf==3.20.2，与本环境 pymilvus(需 protobuf>=5)不可共存，故 UIE 不装在本
+#    venv，而是拆到独立的 uie_service/（独立 venv + HTTP 微服务，CPU 推理）。
+#    本环境的 knowledge/utils/uie_util.py 只是调用该服务的 HTTP 客户端。
+#    注：transformers/accelerate 仍保留，供 sentence-transformers/FlagEmbedding 使用。
+# 4) 推荐安装顺序（避免 mineru 巨大依赖树引发 pip 回溯卡死）：
+#    a. pip install -U pip
+#    b. 上面第 2 步的 torch / torchvision
+#    c. pip install "mineru[all]" -i https://pypi.tuna.tsinghua.edu.cn/simple
+#    d. pip install FlagEmbedding -i https://pypi.tuna.tsinghua.edu.cn/simple
+#    e. pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+# =============================================================================
+
+minio
+langchain-openai
+# document_split_node 直接 import（此前靠 mineru 间接带入，现显式声明）
+langchain-text-splitters
+langgraph
+grandalf
+# 注意：不要用 pymilvus[milvus_lite]，milvus-lite 不发布 Windows wheel（仅 Linux/macOS），
+# 本项目连接的是 Milvus 服务器，无需嵌入式 lite 版
+pymilvus
+pymilvus[model]
+sentence-transformers
+FlagEmbedding
+# 向量/重排序模型依赖（transformers/accelerate 也为其服务）
+transformers
+accelerate
+neo4j
+pymongo
+openai-agents
+
+# RAGAS 评测（knowledge/evaluation/*）：锁定 0.2.15。
+# 说明：ragas 最新版(0.3/0.4)会把 datasets 强升到 5.x、huggingface_hub 升到 2.x，
+# 冲击 BGE-M3 嵌入/重排序运行时；0.2.15 与现有 datasets 3.6/hub 0.36/langchain-core 1.6 兼容，
+# 仅需 knowledge/evaluation/compat.py 补一个 langchain_community.chat_models.vertexai 占位模块。
+ragas==0.2.15
+# ragas 传递依赖，显式声明便于复现（datasets 主环境已有 3.6.0）
+datasets
+
+# Web 服务（此前依赖 mineru 间接带入，显式声明）
+fastapi
+uvicorn
+python-multipart
+python-dotenv
+
+# 模型下载（script/测试代码直接 import modelscope）
+modelscope
+
+# 文档解析（依赖树很大，请按文件头注释的顺序先单独安装）
+mineru[all]

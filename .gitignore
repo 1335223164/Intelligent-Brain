@@ -1,0 +1,45 @@
+knowledge/.env
+knowledge/.env.*
+.env
+.env.*
+!.env.example
+
+.venv/
+**/.venv/
+venv/
+env/
+
+volumes/
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+temp/
+temp-files/
+temp_files/
+*.log
+logs/
+
+# PyCharm 评测插件数据
+.jbeval/
+
+# RAGAS 评测输出报告：不上传数据，仅保留空目录（.gitkeep 占位）
+knowledge/evaluation/reports/*
+!knowledge/evaluation/reports/.gitkeep
+# 冻结评测集：数据不上传，仅保留空目录（如需共享某把尺子可 git add -f 强制添加）
+knowledge/evaluation/datasets/*
+!knowledge/evaluation/datasets/.gitkeep
+
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# 原始/转换文档数据（PDF · md）不上传，仅保留空目录
+docs/*
+!docs/.gitkeep
+

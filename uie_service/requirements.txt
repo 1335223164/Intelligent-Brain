@@ -1,0 +1,53 @@
+# =============================================================================
+# UIE 抽取微服务专用依赖（独立 venv，切勿装进主项目环境！）
+# -----------------------------------------------------------------------------
+# 为什么单独一个环境：
+#   UIE 依赖 paddlenlp；而主项目 pymilvus 需 protobuf>=5，二者在本 venv 之外的同一
+#   解释器会与 paddle 栈的 protobuf 冲突。故 UIE 跑在独立 venv + 独立进程（HTTP 微服务），
+#   主项目 knowledge/utils/uie_util.py 仅作 HTTP 客户端调用它。
+#
+# 【Windows + Python 3.12 的关键结论（实测）】：
+#   - paddlenlp >= 2.6.0 声明依赖 tool-helpers，而 tool-helpers 在 PyPI 上只有元数据、
+#     无任何可安装产物（wheel/sdist 皆无），任何镜像/任何 Python 都会失败。
+#   - paddlenlp <= 2.5.1 在包加载期 import paddle.fluid，而 paddle.fluid 在 paddle>=2.6
+#     已删除；paddle<=2.5 又无 cp312 Windows wheel —— 故 2.5.1 在 py3.12 上跑不通。
+#   - 破局：paddlenlp==2.6.1 用 --no-deps 安装（跳过 tool-helpers；运行期 UIE 路径实际
+#     不需要它），并手动补齐它真正需要的依赖，配 paddlepaddle==2.6.2（有 cp312 win wheel、
+#     且 2.6.1 已不再 import paddle.fluid）。
+#   - 依赖自洽锁：huggingface_hub==0.25.2（paddlenlp2.6.1 需 repo_type_and_id_from_hf_id，
+#     该函数在 hf_hub>=1.0 被删）；datasets==2.21.0（配 hf_hub0.25）；numpy>=2（配 pyarrow/scipy）。
+#
+# 安装（务必官方源；分两步，paddlenlp 用 --no-deps）：
+#   python -m venv .venv
+#   .venv\Scripts\python.exe -m pip install -U pip setuptools wheel
+#   .venv\Scripts\python.exe -m pip install -i https://pypi.org/simple -r requirements.txt
+#   .venv\Scripts\python.exe -m pip install -i https://pypi.org/simple --no-deps "paddlenlp==2.6.1"
+#
+# 启动服务：
+#   .venv\Scripts\python.exe -m uvicorn app:app --host 127.0.0.1 --port 8001
+# =============================================================================
+
+# 深度框架 GPU 版（CPU 版实测 2000 字联合抽取 27~40s/次，换 GPU 提速；
+# PyPI 官方 win cp312 wheel 自带 CUDA/cuDNN，用 paddle.version.cuda() 可查内含版本，
+# RTX 40系(sm_89) 可跑；若驱动过旧需升级 NVIDIA 驱动）
+paddlepaddle-gpu==2.6.2
+
+# UIE 依赖链的自洽锁版本（务必按此 pin，否则 import 期报 repo_type/fluid/pyarrow 错）
+huggingface_hub==0.25.2
+datasets==2.21.0
+numpy>=2.0
+safetensors
+# paddle/paddlenlp 运行期通用依赖
+protobuf
+Pillow
+typing_extensions
+requests
+tqdm
+
+# Web 服务
+fastapi
+uvicorn
+pydantic
+python-dotenv
+
+# 注：paddlenlp==2.6.1 不在这里，需用 --no-deps 单独安装（见文件头第 2 步）。
