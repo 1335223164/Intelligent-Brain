@@ -22,7 +22,7 @@
 |---|---|
 | Web / API | FastAPI + Uvicorn（查询 `:8000`、导入 `:18000`） |
 | 编排 | LangGraph（导入图 / 查询图） |
-| 向量库 | Milvus 2.5（切片 `kb_chunks`、商品名 `kb_item_names`、实体名 `kb_entity_names`） |
+| 向量库 | Milvus 2.5（切片 `chunks`、商品名 `item_names`、实体名 `entity_names`） |
 | 图数据库 | Neo4j（知识图谱） |
 | 文档/会话库 | MongoDB |
 | 对象存储 | MinIO（图片、原始文件） |
